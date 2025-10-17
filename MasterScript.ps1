@@ -26,8 +26,10 @@ if ($LASTEXITCODE -ne 0)
 }
 
 Write-Host "`n==> Merging latest changes from release..." -ForegroundColor Cyan
+
+$releaseNotes = git log -1 --pretty=%B
 git fetch origin
-git merge release --no-ff
+git merge release --no-ff -m "$releaseNotes"
 
 if ($LASTEXITCODE -ne 0)
 {
@@ -55,10 +57,7 @@ else
 }
 
 $tagNum = "v" + $versionNum
-$releaseNotes = git log -1 --pretty=%B
-
 git tag $tagNum
-git commit -m "$releaseNotes"
 git push origin master
 
 
@@ -71,7 +70,8 @@ cd ..
 $currentDir = Split-Path -Path (Get-Location) -Leaf
 while ($currentDir -ne "SourceLibraries")
 {
-    $srcLibPath = Read-Host "Could not find SourceLibraries.`nPlease enter path:" -ForegroundColor Yellow
+    Write-Host "Could not find SourceLibraries." -ForegroundColor Yellow
+    $srcLibPath = Read-Host "Please enter path:"
 }
 cd srcLibPath
 

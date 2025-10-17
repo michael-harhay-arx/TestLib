@@ -193,7 +193,8 @@ Copy-Item -Path $glbBuildFilePath -Destination $glbDLLTargetFolder
 
 Write-Host "`n==> Committing to release branch..." -ForegroundColor Cyan
 git add -A
-git commit -m "$formattedNotes" 
+git commit -m "$formattedNotes"
+git push origin release 
 
 
 
