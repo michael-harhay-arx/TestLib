@@ -18,6 +18,18 @@ $glbCompilerPath = "C:\Program Files (x86)\National Instruments\CVI2019\compile.
 
 # ------------------ Main Execution ------------------- #
 
+
+# 1. Check for GitHub CLI, install if necessary
+Write-Host "`n==> Checking that GitHub CLI is installed..." -ForegroundColor Cyan
+
+gh --version
+if ($LASTEXITCODE -ne 0)
+{
+    Write-Host "Error: GitHub CLI not installed. Installing now..." -ForegroundColor Yellow
+    winget install GitHub.cli
+}
+
+
 # 1. Set up release branch
 
 # Get current branch
@@ -162,7 +174,7 @@ $releaseNotes = Get-Content $tempFile | Where-Object { $_ -and ($_ -notmatch '^\
 Remove-Item $tempFile -ErrorAction SilentlyContinue
 
 $formattedNotes = $releaseNotes -join "`n"
-Write-Host "`tRelease notes:`n" -ForegroundColor Green
+Write-Host "Release notes:`n" -ForegroundColor Green
 Write-Host $formattedNotes
 
 
@@ -210,12 +222,20 @@ if ($buildOk -eq $true)
 else
 {
     Write-Host "CI/CD failed." -ForegroundColor Red
+    # CI/CD failed, rebuild DLL and push again
 }
 
 
 
 # 6. Create pull request, end script
 Write-Host "`n==> Creating GitHub pull request..." -ForegroundColor Cyan
+
+gh pr create `
+    --head release `
+    --base master `
+    --title "Release v$versionNum" `
+    --body "Release notes:`n$releaseNotes" `
+    --assignee @me # 20251020 Michael: TODO change to Biye later
 
 git checkout $currentBranch
 Write-Host "`nScript execution complete." -ForegroundColor Green
