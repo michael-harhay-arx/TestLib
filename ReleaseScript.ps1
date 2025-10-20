@@ -236,7 +236,7 @@ Write-Host "`n==> Creating GitHub pull request..." -ForegroundColor Cyan
 gh pr create `
     --head release `
     --base master `
-    --title "Release v$versionNum" `
+    --title "Release v$newVersionNum" `
     --body "Release notes:`n$releaseNotes" `
     --assignee "@me" 
 
