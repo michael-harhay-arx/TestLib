@@ -45,10 +45,10 @@ git pull origin master
 Write-Host "`n==> Tagging release & pushing to remote..." -ForegroundColor Cyan
 $tagNum = "v" + $versionNum
 git tag $tagNum
-git push origin master
+git push origin --tags
 
 
-<#
+
 # 4. Change directory to SourceLibraries, commit changes
 Write-Host "`n==> Committing change to SourceLibraries..." -ForegroundColor Cyan
 
@@ -65,7 +65,7 @@ cd $srcLibPath
 git add $glbLibPathName
 git commit -m "New release for ${glbLibName}: $tagNum"
 git push origin master
-#>
+
 
 
 # 5. End script
