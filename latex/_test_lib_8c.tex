@@ -1,0 +1,82 @@
+\hypertarget{_test_lib_8c}{}\doxysection{Test\+Lib.\+c File Reference}
+\label{_test_lib_8c}\index{TestLib.c@{TestLib.c}}
+
+
+A short description.  
+
+
+{\ttfamily \#include $<$ansi\+\_\+c.\+h$>$}\newline
+{\ttfamily \#include $<$utility.\+h$>$}\newline
+{\ttfamily \#include \char`\"{}Test\+Lib.\+h\char`\"{}}\newline
+{\ttfamily \#include \char`\"{}Test\+Lib\+\_\+\+Definitions.\+h\char`\"{}}\newline
+{\ttfamily \#include \char`\"{}System\+Log\+\_\+\+LIB.\+h\char`\"{}}\newline
+\doxysubsection*{Functions}
+\begin{DoxyCompactItemize}
+\item 
+\mbox{\Hypertarget{_test_lib_8c_ae710bc581ee6420665fdb19b7cf7e736}\label{_test_lib_8c_ae710bc581ee6420665fdb19b7cf7e736}} 
+void {\bfseries Get\+Standard\+Err\+Msg} (int error, char errmsg\mbox{[}ERRLEN\mbox{]})
+\item 
+void \mbox{\hyperlink{_test_lib_8c_ab9dcc647d418c2fe508c94d0a4187084}{Get\+Lib\+Err\+Msg}} (int error, char errmsg\mbox{[}ERRLEN\mbox{]})
+\begin{DoxyCompactList}\small\item\em Get error message for library error codes. \end{DoxyCompactList}\item 
+\mbox{\Hypertarget{_test_lib_8c_af45a1450e4ff41b8d184c88530f014e7}\label{_test_lib_8c_af45a1450e4ff41b8d184c88530f014e7}} 
+int {\bfseries Initialize\+\_\+\+Test\+Lib} (char errmsg\mbox{[}ERRLEN\mbox{]})
+\item 
+int \mbox{\hyperlink{_test_lib_8c_a87ac20741317162b545ffdfb9e6118c5}{Lib\+\_\+\+Fn}} (IN int $\ast$a, IN long long $\ast$b, IN float $\ast$c, double $\ast$d, short $\ast$e, char $\ast$f, char errmsg\mbox{[}ERRLEN\mbox{]})
+\begin{DoxyCompactList}\small\item\em Library Function Template. Name all exported functions with Lib\+Name\+\_\+\+Description, where Lib\+Name is the same for all functions and Description tells the user roughly what the function accomplishes. \end{DoxyCompactList}\item 
+\mbox{\Hypertarget{_test_lib_8c_a99949578217dd26c7d1db6de044a7376}\label{_test_lib_8c_a99949578217dd26c7d1db6de044a7376}} 
+int {\bfseries Lib\+\_\+\+Fn2} (char errmsg\mbox{[}ERRLEN\mbox{]})
+\begin{DoxyCompactList}\small\item\em Template for copy pasting. \end{DoxyCompactList}\end{DoxyCompactItemize}
+\doxysubsection*{Variables}
+\begin{DoxyCompactItemize}
+\item 
+\mbox{\Hypertarget{_test_lib_8c_aa1773872688f21ac6882636096e9c7b6}\label{_test_lib_8c_aa1773872688f21ac6882636096e9c7b6}} 
+Sys\+Log\+Info {\bfseries glb\+Sys\+Log\+Info} = \{.hr=-\/1, .min=-\/1, .sec=-\/1\}
+\begin{DoxyCompactList}\small\item\em Stores the System\+Log.\+arx modified time to determine whether the file has changed. This definition should be shared across all source files via extern. \end{DoxyCompactList}\end{DoxyCompactItemize}
+
+
+\doxysubsection{Detailed Description}
+A short description. 
+
+\begin{DoxyAuthor}{Author}
+
+\end{DoxyAuthor}
+\begin{DoxyCopyright}{Copyright}
+. All Rights Reserved. 
+\end{DoxyCopyright}
+\begin{DoxyDate}{Date}
+10/15/2025 11\+:37\+:28 AM
+\end{DoxyDate}
+A longer description.
+
+This Library was created using
+\begin{DoxyItemize}
+\item Template version 2.\+1.\+0
+\item Arxtron\+Toolslib version 1.\+5.\+0 PLEASE ONLY UPDATE THE VERSION NUMBERS WHEN UPDATING THE TEMPLATE OR RELATED TOOLSLIB THESE VERSION NUMBERS SHOULD BE SEPARATE FROM THE LIBRARY VERSION THE ALL CAPS PORTION OF THIS COMMENT SECTION CAN BE REMOVED AFTER CREATING THE LIBRARY 
+\end{DoxyItemize}
+
+\doxysubsection{Function Documentation}
+\mbox{\Hypertarget{_test_lib_8c_ab9dcc647d418c2fe508c94d0a4187084}\label{_test_lib_8c_ab9dcc647d418c2fe508c94d0a4187084}} 
+\index{TestLib.c@{TestLib.c}!GetLibErrMsg@{GetLibErrMsg}}
+\index{GetLibErrMsg@{GetLibErrMsg}!TestLib.c@{TestLib.c}}
+\doxysubsubsection{\texorpdfstring{GetLibErrMsg()}{GetLibErrMsg()}}
+{\footnotesize\ttfamily void Get\+Lib\+Err\+Msg (\begin{DoxyParamCaption}\item[{int}]{error,  }\item[{char}]{errmsg\mbox{[}\+ERRLEN\mbox{]} }\end{DoxyParamCaption})}
+
+
+
+Get error message for library error codes. 
+
+Define error codes in the header file under CONSTANTS \mbox{\Hypertarget{_test_lib_8c_a87ac20741317162b545ffdfb9e6118c5}\label{_test_lib_8c_a87ac20741317162b545ffdfb9e6118c5}} 
+\index{TestLib.c@{TestLib.c}!Lib\_Fn@{Lib\_Fn}}
+\index{Lib\_Fn@{Lib\_Fn}!TestLib.c@{TestLib.c}}
+\doxysubsubsection{\texorpdfstring{Lib\_Fn()}{Lib\_Fn()}}
+{\footnotesize\ttfamily int Lib\+\_\+\+Fn (\begin{DoxyParamCaption}\item[{IN int $\ast$}]{a,  }\item[{IN long long $\ast$}]{b,  }\item[{IN float $\ast$}]{c,  }\item[{double $\ast$}]{d,  }\item[{short $\ast$}]{e,  }\item[{char $\ast$}]{f,  }\item[{char}]{errmsg\mbox{[}\+ERRLEN\mbox{]} }\end{DoxyParamCaption})}
+
+
+
+Library Function Template. Name all exported functions with Lib\+Name\+\_\+\+Description, where Lib\+Name is the same for all functions and Description tells the user roughly what the function accomplishes. 
+
+This function is also set up to demonstrate how SYSLOG is expected to be used. In order to use SYSLOG, all function parameters have to be pointers. The IN macro should be used to indicate input parameters.
+
+All functions should use all components of this template function unless it must be excluded from system logging for speed reasons.
+
+See the SYSLOG comment block for more details on the parameters being passed in. 
