@@ -12,13 +12,27 @@ $glbBuildFilePath = Get-ChildItem -Path $Root -Filter *.dll -File | Select-Objec
 $glbPrjFilePath = Get-ChildItem -Path $Root -Filter *.prj -File | Select-Object -First 1 -ExpandProperty FullName
 $glbLogFilePath = Join-Path $Root "build_log.txt"
 $glbDLLTargetFolder = Join-Path $Root "DLLs"
+$glbDocFilePath = Get-ChildItem -Filter "*Extended_Documentation.c" -File | Select-Object -First 1 -ExpandProperty FullName
 
 $glbCompilerPath = "C:\Program Files (x86)\National Instruments\CVI2019\compile.exe"
 
 
 # ------------------ Main Execution ------------------- #
 
-# 1. Set up release branch
+
+# 1. Check for GitHub CLI, install if necessary
+Write-Host "`n==> Checking that GitHub CLI is installed..." -ForegroundColor Cyan
+gh --version
+
+if ($LASTEXITCODE -ne 0)
+{
+    Write-Host "GitHub CLI not installed. Installing now..." -ForegroundColor Yellow
+    winget install GitHub.cli
+}
+
+
+
+# 2. Set up release branch
 
 # Get current branch
 $targetBranch = git branch --show-current
@@ -75,9 +89,8 @@ if ($LASTEXITCODE -ne 0)
 }
 
 
-# 2. Version info / release notes questionnaire
 
-# Get and update version info
+# 3. Update version info
 Write-Host "`n==> Checking previous DLL version..." -ForegroundColor Cyan
 
 $prjFileContent = Get-Content $glbPrjFilePath -Raw
@@ -104,7 +117,7 @@ $numParts = $currVersionNum -split ','
 
 while ($versionIncremented -ne $true)
 {
-    $incrementType = Read-Host "`nVersion increment type? [major / minor / build / revision]"
+    $incrementType = Read-Host "`nVersion increment type? [major / minor / build]"
 
     switch ($incrementType.ToLower())
     {
@@ -129,11 +142,6 @@ while ($versionIncremented -ne $true)
             $revision = 0
             $versionIncremented = $true
         }
-        'revision' 
-        {
-            $revision++
-            $versionIncremented = $true
-        }
         default 
         {
             Write-Host "Invalid input." -ForegroundColor Red
@@ -148,33 +156,58 @@ $newContent = $prjFileContent -replace 'Numeric File Version\s*=\s*"\d+,\d+,\d+,
 Set-Content $glbPrjFilePath -Value $newContent -Encoding ASCII
 
 
-# Get release notes
+
+# 4. Get release notes
 Write-Host "`n==> Enter release notes in Notepad. Save and close to continue..." -ForegroundColor Cyan
 
-$tempFile = [System.IO.Path]::GetTempFileName()
-Set-Content $tempFile "# Enter release notes below. Lines starting with # are ignored.`n"
-Start-Process notepad $tempFile -Wait
+$releaseNotesFile = "ReleaseNotes.md"
+if (-not (Test-Path $releaseNotesFile))
+{
+@"
+## Insert summary / title here
+
+- Point1
+- Point2
+- Point3
+"@ | Set-Content $releaseNotesFile -Encoding UTF8
+}
+
+Start-Process notepad $releaseNotesFile -Wait
 
 # Read file contents, ignoring comment lines and blanks
-$releaseNotes = Get-Content $tempFile | Where-Object { $_ -and ($_ -notmatch '^\s*#') }
-
-# Clean up temp file, display release notes
-Remove-Item $tempFile -ErrorAction SilentlyContinue
-
+$releaseNotes = Get-Content $releaseNotesFile | Where-Object { $_.Trim() -ne "" }
 $formattedNotes = $releaseNotes -join "`n"
-Write-Host "`tRelease notes:`n" -ForegroundColor Green
-Write-Host $formattedNotes
+Write-Host "Release notes:`n" -ForegroundColor Green
+Write-Host $formattedNotes.Replace('## ', '')
 
 
 
-# 3. Compile
+# 5. Update extended documentation in CVI
+$replacementContent = Get-Content $releaseNotesFile -Raw
+
+$date = Get-Date -Format "yyyy/MM/dd"
+$userName = git config --global user.name
+
+$replacementContent = $replacementContent.Replace("- ", "* <li>")
+$replacementContent = [regex]::Replace($replacementContent, "## .*\s+", "* <tr><td>VERSION`n* <td> $userName`n* <td>DATE`n* <td>`n* <ul>`n")
+$replacementContent = $replacementContent + "* </ul>`n* </table>"
+$replacementContent = $replacementContent.Replace("VERSION", "$newVersionNum".Replace(',', '.'))
+$replacementContent = $replacementContent.Replace("DATE", $date)
+
+# Overwrite documentation file
+$docContentOriginal = Get-Content $glbDocFilePath -Raw
+$pattern = "\* </ul>\s*\* </table>"
+$docContentUpdated = [regex]::Replace($docContentOriginal, $pattern, $replacementContent)
+Set-Content -Path $glbDocFilePath -Value $docContentUpdated -Encoding UTF8
+
+
+
+# 6. Compile
 Write-Host "`n==> Compiling project..." -ForegroundColor Cyan
-& $glbCompilerPath $glbPrjFilePath -fileVersion $newVersionNum -log $glbLogFilePath
+& $glbCompilerPath $glbPrjFilePath -release -fileVersion $newVersionNum -log $glbLogFilePath
 $CompileSuccess = Select-String -Path $glbLogFilePath -Pattern "Build succeeded" -Quiet
 
-#$CompileSuccess = $true # 20251015 Michael: use to simulate compilation results, delete later and uncomment actual compilation
-
-if ($CompileSuccess) 
+if ($CompileSuccess)
 {
     Write-Host "Compilation successful." -ForegroundColor Green
 } 
@@ -187,17 +220,28 @@ else
 
 
 
-# 4. Successful compilation, copy to DLL folder and commit
+# 7. Successful compilation, copy to DLL folder and commit
 Write-Host "`n==> Copying DLL to target folder..." -ForegroundColor Cyan
+New-Item -Path $glbBuildFilePath -ItemType Directory
 Copy-Item -Path $glbBuildFilePath -Destination $glbDLLTargetFolder
 
+if ($LASTEXITCODE -ne 0)
+{
+    Write-Host "Error: could not copy DLL to target folder." -ForegroundColor Red
+    Read-Host "Press Enter to exit..."
+    exit 1
+}
+
+Write-Host "Done." -ForegroundColor Green
+
 Write-Host "`n==> Committing to release branch..." -ForegroundColor Cyan
-git add -A
-git commit -m "$formattedNotes" 
+git add $glbDLLTargetFolder $glbLogFilePath $releaseNotesFile
+git commit -m "$formattedNotes"
+git push origin release 
 
 
 
-# 5. Run CI/CD, recompile if necessary
+# 8. Run CI/CD, recompile if necessary
 Write-Host "`n==> Running CI/CD tests..." -ForegroundColor Cyan
 
 [bool]$buildOk = $true # 20251015 Michael: use to simulate CI/CD results, delete later and run actual tests
@@ -209,12 +253,21 @@ if ($buildOk -eq $true)
 else
 {
     Write-Host "CI/CD failed." -ForegroundColor Red
+    # CI/CD failed, rebuild DLL and push again
 }
 
 
 
-# 6. Create pull request, end script
+# 9. Create pull request, end script
+# 20251020 Michael: TODO change assignee to Biye later
 Write-Host "`n==> Creating GitHub pull request..." -ForegroundColor Cyan
+
+gh pr create `
+    --head release `
+    --base master `
+    --title "Release v$newVersionNum".Replace(',', '.') `
+    --body $formattedNotes `
+    --assignee "@me" 
 
 git checkout $currentBranch
 Write-Host "`nScript execution complete." -ForegroundColor Green
